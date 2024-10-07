@@ -5,12 +5,11 @@ pipeline {
         registry = "waughananda/vprofileapp"
         registryCredential = "dockerhub"
     }
-	stages {
-		tools {
+	tools {
 			maven "MAVEN3"
 			jdk "OracleJDK8"
 		}
-
+	stages {
 		stage('build'){
 			steps{
 				sh 'mvn clean install -DskipTests'
