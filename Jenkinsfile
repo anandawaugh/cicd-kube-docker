@@ -6,6 +6,11 @@ pipeline {
         registryCredential = "dockerhub"
     }
 	stages {
+		tools {
+			maven "MAVEN3"
+			jdk "OracleJDK8"
+		}
+
 		stage('build'){
 			steps{
 				sh 'mvn clean install -DskipTests'
