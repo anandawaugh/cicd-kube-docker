@@ -5,11 +5,6 @@ pipeline {
         registry = "waughananda/vprofileapp"
         registryCredential = "dockerhub"
     }
-
-	tools {
-		maven "MAVEN3"
-		jdk "OracleJDK11"	
-	}
 	stages {
 		stage('build'){
 			steps{
