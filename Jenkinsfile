@@ -37,15 +37,15 @@ pipeline {
                 }
             }
 		}
-		/*
+		
 		stage('Build App Image'){
 			steps{
 				script{
-					dockerImage=docker.build.registry+":V$BUILD_NUMBER"
+					dockerImage=docker.build.registry
 				}
 			}
 		}
-		
+		/*
 		stage('Upload App Image'){
 			steps{
 				script{
