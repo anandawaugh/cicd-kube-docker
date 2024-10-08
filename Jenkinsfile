@@ -93,8 +93,10 @@ pipeline {
         stage('Kubernetes Deploy'){
             agent{label 'SILVER'}
                 steps{
-                    sh "helm install vprofile-stack /opt/cicd-kube-docker/helm/vprofilecharts --set appimage=waughananda/vprofileapp:V29 --namespace prod"
-                }
+                    /*sh "helm install vprofile-stack /opt/cicd-kube-docker/helm/vprofilecharts --set appimage=waughananda/vprofileapp:V29 --namespace prod"
+                */
+					date >> testdate.txt
+				}
 
         }	
 		
