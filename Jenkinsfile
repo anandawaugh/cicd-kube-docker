@@ -88,7 +88,7 @@ pipeline {
                 }
             }
         }
-        /*
+        
         
         stage('Kubernetes Deploy'){
             agent{label 'SILVER'}
@@ -97,6 +97,6 @@ pipeline {
                 }
 
         }	
-		*/
+		
 	}
 }
