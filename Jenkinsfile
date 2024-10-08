@@ -95,7 +95,7 @@ pipeline {
                 steps{
                     /*sh "helm install vprofile-stack /opt/cicd-kube-docker/helm/vprofilecharts --set appimage=waughananda/vprofileapp:V29 --namespace prod"
                 */
-					date >> testdate.txt
+					sh "date >> testdate.txt"
 				}
 
         }	
