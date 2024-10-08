@@ -62,7 +62,7 @@ pipeline {
                 sh "docker rmi $registry:V$BUILD_NUMBER"
             }
         }
-		/*
+		
 		stage ('Sonar Analysis'){
 			environment {
 				scannerHome = tool 'sonar4.7'
@@ -88,7 +88,7 @@ pipeline {
                 }
             }
         }
-        
+        /*
         
         stage('Kubernetes Deploy'){
             agent{label 'SILVER'}
