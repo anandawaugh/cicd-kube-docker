@@ -26,7 +26,7 @@ pipeline {
 				sh 'mvn test'
 			}
 		}
-		/*
+		
 		stage ('Checkstyle Analysis'){
 			steps{
 				sh 'mvn checkstyle:checkstyle'
@@ -37,7 +37,7 @@ pipeline {
                 }
             }
 		}
-		
+		/*
 		stage('Build App Image'){
 			steps{
 				script{
