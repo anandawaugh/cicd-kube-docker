@@ -56,13 +56,13 @@ pipeline {
 				}
 			}
 		}
-		/*
-        stage('Removed unused docker images'){
+		
+        stage('Remove unused docker images'){
             steps{
-                sh "docker rmi $registy:V$BUILD_NUMBER"
+                sh "docker rmi $registry:V$BUILD_NUMBER"
             }
         }
-		
+		/*
 		stage ('Sonar Analysis'){
 			environment {
 				scannerHome = tool 'sonar4.7'
