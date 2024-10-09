@@ -1,111 +1,103 @@
 pipeline {
+	agent any
 
-    agent any
-
-	tools {
-        maven "MAVEN3"
-		jdk "OracleJDK8"
-    }
-
-    environment {
+    environment{
         registry = "waughananda/vprofileapp"
-        registryCredential = 'dockerhub'
+        registryCredential = "dockerhub"
     }
-
-    stages{
-
-        stage('BUILD'){
-            steps {
-                sh 'mvn clean install -DskipTests'
-            }
-            post {
-                success {
-                    echo 'Now Archiving...'
-                    archiveArtifacts artifacts: '**/target/*.war'
-                }
-            }
-        }
-
-        stage('UNIT TEST'){
-            steps {
-                sh 'mvn test'
-            }
-        }
-
-        stage('INTEGRATION TEST'){
-            steps {
-                sh 'mvn verify -DskipUnitTests'
-            }
-        }
-
-        stage ('CODE ANALYSIS WITH CHECKSTYLE'){
-            steps {
-                sh 'mvn checkstyle:checkstyle'
-            }
-            post {
+	tools {
+			maven "MAVEN3"
+			jdk "OracleJDK8"
+		}
+	stages {
+		stage('build'){
+			steps{
+				sh 'mvn clean install -DskipTests'
+			}
+			post {
+				success{
+					echo 'Archiving artifacts now.'
+					archiveArtifacts artifacts: '**/*.war'
+				}
+			}
+		}
+		stage('UNIT TESTS'){
+			steps {
+				sh 'mvn test'
+			}
+		}
+		
+		stage ('Checkstyle Analysis'){
+			steps{
+				sh 'mvn checkstyle:checkstyle'
+			}
+			post {
                 success {
                     echo 'Generated Analysis Result'
                 }
             }
-        }
-
-
-        stage('Building image') {
+		}
+		
+		stage('Build App Image'){
+			steps{
+				script{
+					dockerImage=docker.build registry + ":V$BUILD_NUMBER"
+				}
+			}
+		}
+		
+		stage('Upload App Image'){
+			steps{
+				script{
+					docker.withRegistry( '', registryCredential){
+						dockerImage.push("V$BUILD_NUMBER")
+						dockerImage.push('latest')
+					}
+				}
+			}
+		}
+		
+        stage('Remove unused docker images'){
             steps{
-              script {
-                dockerImage = docker.build registry + ":$BUILD_NUMBER"
-              }
+                sh "docker rmi $registry:V$BUILD_NUMBER"
             }
         }
-        
-        stage('Deploy Image') {
-          steps{
-            script {
-              docker.withRegistry( '', registryCredential ) {
-                dockerImage.push("$BUILD_NUMBER")
-                dockerImage.push('latest')
-              }
-            }
-          }
-        }
-
-        stage('Remove Unused docker image') {
-          steps{
-            sh "docker rmi $registry:$BUILD_NUMBER"
-          }
-        }
-
-        stage('CODE ANALYSIS with SONARQUBE') {
-
-            environment {
-                scannerHome = tool 'sonar4.7'
-            }
-
+		
+		stage ('Sonar Analysis'){
+			environment {
+				scannerHome = tool 'sonar4.7'
+			}
+			steps{
+				withSonarQubeEnv('sonar'){
+					sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
+                            -Dsonar.projectName=vprofile \
+                            -Dsonar.projectVersion=1.0 \
+                            -Dsonar.sources=src/ \
+							-Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
+                            -Dsonar.junit.reportsPath=target/surefire-reports/ \
+							-Dsonar.jacoco.reportsPath=target/jacoco.exec \
+							-Dsonar.java.checkstyle.reportsPath=target/checkstyle-result.xml '''
+				}
+			}
+		}
+		stage('Quality Gate') {
             steps {
-                withSonarQubeEnv('sonar-pro') {
-                    sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
-                   -Dsonar.projectName=vprofile-repo \
-                   -Dsonar.projectVersion=1.0 \
-                   -Dsonar.sources=src/ \
-                   -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
-                   -Dsonar.junit.reportsPath=target/surefire-reports/ \
-                   -Dsonar.jacoco.reportsPath=target/jacoco.exec \
-                   -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
-                }
-
-                timeout(time: 10, unit: 'MINUTES') {
+                // Wait for SonarQube analysis to be completed and check quality gate
+                timeout(time: 1, unit: 'HOURS') {
                     waitForQualityGate abortPipeline: true
                 }
             }
         }
-        stage('Kubernetes Deploy') {
-	  agent { label 'KOPS' }
-            steps {
-                    sh "helm upgrade --install --force vproifle-stack helm/vprofilecharts --set appimage=${registry}:${BUILD_NUMBER} --namespace prod"
-            }
-        }
+        
+        
+        stage('Kubernetes Deploy'){
+            agent{label 'SILVER'}
+                steps{
+                    sh "helm install vprofile-stack helm/vprofilecharts --set appimage=waughananda/vprofileapp:V29 --namespace prod"                
+				/*	sh "date >> testdate.txt" */
+				}
 
-    }
-
-
+        }	
+		
+	}
 }
