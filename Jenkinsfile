@@ -93,7 +93,7 @@ pipeline {
         stage('Kubernetes Deploy'){
             agent{label 'SILVER'}
                 steps{
-                    sh "helm upgrade --install --force vproifle-stack helm/vprofilecharts --set appimage=${registry}:${BUILD_NUMBER} --namespace prod"                
+                    sh "helm upgrade --install --force vproifle-stack helm/vprofilecharts --set appimage=${registry}:V${BUILD_NUMBER} --namespace prod"                
 				/*	sh "date >> testdate.txt" */
 				}
 
